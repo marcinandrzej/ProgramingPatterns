@@ -672,7 +672,9 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1768338977}
-  - component: {fileID: 1768338976}
+  - component: {fileID: 1768338980}
+  - component: {fileID: 1768338979}
+  - component: {fileID: 1768338978}
   m_Layer: 0
   m_Name: Agent
   m_TagString: Untagged
@@ -680,26 +682,6 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!114 &1768338976
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1768338975}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 69d7548b0cb85d84e852bf06f4fb2c70, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::Runtime.Agent.AgentController
-  agentType: 0
-  stateMachineFactory: {fileID: 11400000, guid: 568571399dc219e47a17ace567219530, type: 2}
-  <AgentData>k__BackingField:
-    <Speed>k__BackingField: 1
-    <AngularSpeed>k__BackingField: 10
-    <AngularDotTreshold>k__BackingField: 0.95
-    <LocomotionRoot>k__BackingField: {fileID: 1768338977}
-    <Target>k__BackingField: {fileID: 0}
 --- !u!4 &1768338977
 Transform:
   m_ObjectHideFlags: 0
@@ -716,6 +698,47 @@ Transform:
   - {fileID: 131181114}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1768338978
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1768338975}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 414c56628939adc478a2adf6f6a3498b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Runtime.Agents.AgentLocomotionModuleSimple
+--- !u!114 &1768338979
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1768338975}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f2b5e28a8e1200f4ca669e6f403d91a4, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Runtime.Command.AgentCommands.AgentCommandExecutor
+  context: {fileID: 1768338980}
+--- !u!114 &1768338980
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1768338975}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 50097f895a37a2541844ac1b4600768a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Runtime.Agents.AgentSimple
+  agentType: 0
+  stateMachineFactory: {fileID: 11400000, guid: 568571399dc219e47a17ace567219530, type: 2}
+  locomotionModule: {fileID: 1768338978}
+  commandExecutor: {fileID: 1768338979}
 --- !u!1 &1961875960
 GameObject:
   m_ObjectHideFlags: 0

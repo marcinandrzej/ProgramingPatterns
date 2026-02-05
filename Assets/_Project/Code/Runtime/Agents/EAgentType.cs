@@ -1,4 +1,4 @@
-﻿namespace Runtime.Agent
+﻿namespace Runtime.Agents
 {
     public enum EAgentType
     {
