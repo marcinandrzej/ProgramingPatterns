@@ -1,6 +1,5 @@
 ﻿using Cysharp.Threading.Tasks;
 using Runtime.Agents;
-using System;
 using System.Threading;
 using UnityEngine;
 
@@ -8,13 +7,56 @@ namespace Runtime.Command.AgentCommands
 {
     public class SeekCommand : AgentCommandBase
     {
+        private const int Delay = 3000;
+        private const float Radius = 5f;
+
         public async override UniTask Execute(Agent context, CancellationToken token)
         {
-            Debug.Log("START");
+            Vector3 centralPoint = context.LocomotionModule.LocomotionRoot.position;
+            
+            while (!token.IsCancellationRequested)
+            {
+                Vector3 forward = context.LocomotionModule.RotationPivot.forward;
+                Vector3 right = context.LocomotionModule.RotationPivot.right;
+                Vector3 left = -right;
+                await Rotate(context, right, token);
+                await UniTask.Delay(Delay, cancellationToken: token);
+                await Rotate(context, forward, token);
+                await UniTask.Delay(Delay/2, cancellationToken: token);
+                await Rotate(context, left, token);
+                await UniTask.Delay(Delay, cancellationToken: token);
+                await Rotate(context, forward, token);
+                await UniTask.Delay(Delay/2, cancellationToken: token);
+                Vector3 targetPosition = GetTarget(context.LocomotionModule.LocomotionRoot.position, centralPoint, Radius);
+                Vector3 targetDirection = (targetPosition - context.LocomotionModule.LocomotionRoot.position).normalized;
+                await Rotate(context, targetDirection, token);
+                await Move(context, targetPosition, token);
+            }
+        }
 
-            await UniTask.Delay(5000, cancellationToken: token);
+        private async UniTask Move(Agent context, Vector3 target, CancellationToken token)
+        {
+            while (!context.LocomotionModule.MoveTowardsTarget(target))
+                await UniTask.Yield(PlayerLoopTiming.Update, token);
+        }
 
-            Debug.Log("END");
+        private async UniTask Rotate(Agent context, Vector3 target, CancellationToken token)
+        {
+            while (!context.LocomotionModule.RotateTowardsDirection(target))
+                await UniTask.Yield(PlayerLoopTiming.Update, token);
+        }
+
+        private Vector3 GetTarget(Vector3 currentPosition, Vector3 centralPoint, float radius) 
+        {
+            Vector3 randomDirection = Vector3.ProjectOnPlane(Random.insideUnitSphere, Vector3.up).normalized;
+            Vector3 toAgentDirection = Vector3.ProjectOnPlane(currentPosition - centralPoint, Vector3.up).normalized;
+
+            if (Vector3.Dot(randomDirection, toAgentDirection) > 0)
+                randomDirection = -randomDirection;
+
+            Vector3 targetPosition = radius * randomDirection + centralPoint;
+
+            return targetPosition;
         }
     }
 }

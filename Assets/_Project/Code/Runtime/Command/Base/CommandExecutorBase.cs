@@ -25,7 +25,7 @@ namespace Runtime.Command.Base
             Run(commands, executionCTS.Token).SuppressCancellationThrow().Forget();
         }
 
-        private void CancelCurrentCommandExecution()
+        public void CancelCurrentCommandExecution()
         {
             if (executionCTS != null)
             {

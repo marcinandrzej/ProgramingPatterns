@@ -9,5 +9,7 @@ namespace Runtime.Command.Base
         public bool IsCommandExecuting { get; }
 
         public void ExecuteCommand(List<ICommand<ContextT>> commands, CancellationToken externalCT = default);
+
+        public void CancelCurrentCommandExecution();
     }
 }

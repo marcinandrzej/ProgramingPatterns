@@ -26,23 +26,37 @@ namespace Runtime.Factory.AgentFactories
             }
         }
 
+        //TO DO MOVE STATE MACHINE BUILDING WITH PARAMETRIZATION TO SEPARATE FACTORY (ObserverFactory, RunnerFactory ...)
         private StateMachine<AgentState, Agent> BuildObserver()
         {
             AgentState seekState = new AgentStateBuilder()
                 .WithOnEnter((previous, agent) =>
                 {
-                    List<ICommand<Agent>> commands = new List<ICommand<Agent>>() { new SeekCommand(), new SeekCommand() };
+                    List<ICommand<Agent>> commands = new List<ICommand<Agent>>() { new SeekCommand() };
                     agent.CommandExecutor.ExecuteCommand(commands);
-                }).Build();
+                })
+                .WithOnExit((next, agent) =>
+                {
+                    if (agent.CommandExecutor.IsCommandExecuting)
+                        agent.CommandExecutor.CancelCurrentCommandExecution();
+                })
+                .Build();
 
             AgentState observeState = new AgentStateBuilder()
                 .WithOnEnter((previous, agent) => 
                 {
-                    Debug.Log("Observe");
-                }).Build();
+                    List<ICommand<Agent>> commands = new List<ICommand<Agent>>() { new LookAtCommand() };
+                    agent.CommandExecutor.ExecuteCommand(commands);
+                })
+                .WithOnExit((next, agent) =>
+                {
+                    if (agent.CommandExecutor.IsCommandExecuting)
+                        agent.CommandExecutor.CancelCurrentCommandExecution();
+                })
+                .Build();
 
-            Transition<AgentState, Agent> seekToObserve = new Transition<AgentState, Agent>(observeState, agent => { return !agent.CommandExecutor.IsCommandExecuting; }, 0);
-            Transition<AgentState, Agent> observeToSeek = new Transition<AgentState, Agent>(seekState, agent => { return false; }, 0);
+            Transition<AgentState, Agent> seekToObserve = new Transition<AgentState, Agent>(observeState, agent => { return agent.DetectionModule.Target != null; }, 0);
+            Transition<AgentState, Agent> observeToSeek = new Transition<AgentState, Agent>(seekState, agent => { return agent.DetectionModule.Target == null; }, 0);
 
             seekState.RegisterTransition(seekToObserve);
             observeState.RegisterTransition(observeToSeek);
@@ -54,20 +68,84 @@ namespace Runtime.Factory.AgentFactories
             return machine;
         }
 
-        private StateMachine<AgentState, Agent> BuildRunner() 
+        private StateMachine<AgentState, Agent> BuildFollower() 
         {
-            StateMachine<AgentState, Agent> machine = new StateMachine<AgentState, Agent>();
+            AgentState seekState = new AgentStateBuilder()
+                .WithOnEnter((previous, agent) =>
+                {
+                    List<ICommand<Agent>> commands = new List<ICommand<Agent>>() { new SeekCommand() };
+                    agent.CommandExecutor.ExecuteCommand(commands);
+                })
+                .WithOnExit((next, agent) =>
+                {
+                    if (agent.CommandExecutor.IsCommandExecuting)
+                        agent.CommandExecutor.CancelCurrentCommandExecution();
+                })
+                .Build();
 
-            //TO DO
+            AgentState followState = new AgentStateBuilder()
+                .WithOnEnter((previous, agent) =>
+                {
+                    List<ICommand<Agent>> commands = new List<ICommand<Agent>>() { new FollowCommand() };
+                    agent.CommandExecutor.ExecuteCommand(commands);
+                })
+                .WithOnExit((next, agent) =>
+                {
+                    if (agent.CommandExecutor.IsCommandExecuting)
+                        agent.CommandExecutor.CancelCurrentCommandExecution();
+                })
+                .Build();
+
+            Transition<AgentState, Agent> seekToFollow = new Transition<AgentState, Agent>(followState, agent => { return agent.DetectionModule.Target != null; }, 0);
+            Transition<AgentState, Agent> followToSeek = new Transition<AgentState, Agent>(seekState, agent => { return agent.DetectionModule.Target == null; }, 0);
+
+            seekState.RegisterTransition(seekToFollow);
+            followState.RegisterTransition(followToSeek);
+
+            StateMachine<AgentState, Agent> machine = new StateMachine<AgentState, Agent>();
+            machine.RegisterState(seekState, true);
+            machine.RegisterState(followState);
 
             return machine;
         }
 
-        private StateMachine<AgentState, Agent> BuildFollower() 
+        private StateMachine<AgentState, Agent> BuildRunner() 
         {
-            StateMachine<AgentState, Agent> machine = new StateMachine<AgentState, Agent>();
+            AgentState seekState = new AgentStateBuilder()
+                 .WithOnEnter((previous, agent) =>
+                 {
+                     List<ICommand<Agent>> commands = new List<ICommand<Agent>>() { new SeekCommand() };
+                     agent.CommandExecutor.ExecuteCommand(commands);
+                 })
+                 .WithOnExit((next, agent) =>
+                 {
+                     if (agent.CommandExecutor.IsCommandExecuting)
+                         agent.CommandExecutor.CancelCurrentCommandExecution();
+                 })
+                 .Build();
 
-            //TO DO
+            AgentState runState = new AgentStateBuilder()
+                .WithOnEnter((previous, agent) =>
+                {
+                    List<ICommand<Agent>> commands = new List<ICommand<Agent>>() { new EscapeCommand() };
+                    agent.CommandExecutor.ExecuteCommand(commands);
+                })
+                .WithOnExit((next, agent) =>
+                {
+                    if(agent.CommandExecutor.IsCommandExecuting)
+                        agent.CommandExecutor.CancelCurrentCommandExecution();
+                })
+                .Build();
+
+            Transition<AgentState, Agent> seekToRun = new Transition<AgentState, Agent>(runState, agent => { return agent.DetectionModule.Target != null; }, 0);
+            Transition<AgentState, Agent> runToSeek = new Transition<AgentState, Agent>(seekState, agent => { return !agent.CommandExecutor.IsCommandExecuting; }, 0);
+
+            seekState.RegisterTransition(seekToRun);
+            runState.RegisterTransition(runToSeek);
+
+            StateMachine<AgentState, Agent> machine = new StateMachine<AgentState, Agent>();
+            machine.RegisterState(seekState, true);
+            machine.RegisterState(runState);
 
             return machine;
         }
