@@ -1,9 +1,10 @@
-using System.Threading.Tasks;
+using Cysharp.Threading.Tasks;
+using System.Threading;
 
 namespace Runtime.Command.Base
 {
     public interface ICommand<ContextT>
     {
-        public Task Execute(ContextT context);
+        public UniTask Execute(ContextT context, CancellationToken cancel);
     }
 }

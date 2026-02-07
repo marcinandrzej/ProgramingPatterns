@@ -31,14 +31,17 @@ namespace Runtime.Factory.AgentFactories
             AgentState seekState = new AgentStateBuilder()
                 .WithOnEnter((previous, agent) =>
                 {
-                    List<ICommand<Agent>> commands = new List<ICommand<Agent>>() { new SeekCommand() };
+                    List<ICommand<Agent>> commands = new List<ICommand<Agent>>() { new SeekCommand(), new SeekCommand() };
                     agent.CommandExecutor.ExecuteCommand(commands);
-                })
-                .Build();
+                }).Build();
 
-            AgentState observeState = new AgentStateBuilder().Build();
+            AgentState observeState = new AgentStateBuilder()
+                .WithOnEnter((previous, agent) => 
+                {
+                    Debug.Log("Observe");
+                }).Build();
 
-            Transition<AgentState, Agent> seekToObserve = new Transition<AgentState, Agent>(observeState, agent => { return false; }, 0);
+            Transition<AgentState, Agent> seekToObserve = new Transition<AgentState, Agent>(observeState, agent => { return !agent.CommandExecutor.IsCommandExecuting; }, 0);
             Transition<AgentState, Agent> observeToSeek = new Transition<AgentState, Agent>(seekState, agent => { return false; }, 0);
 
             seekState.RegisterTransition(seekToObserve);

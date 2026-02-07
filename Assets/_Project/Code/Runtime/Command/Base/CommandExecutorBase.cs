@@ -1,23 +1,60 @@
 ﻿using UnityEngine;
 using System.Collections.Generic;
+using System.Threading;
+using Cysharp.Threading.Tasks;
 
 namespace Runtime.Command.Base
 {
     public abstract class CommandExecutorBase<ContextT> : MonoBehaviour, ICommandExecutor<ContextT>
     {
         [SerializeField] private ContextT context;
-        private bool isCommandExecuting = false;
 
-        public bool IsCommandExecuting => isCommandExecuting;
+        private CancellationTokenSource executionCTS = null;
 
-        public async void ExecuteCommand(List<ICommand<ContextT>> commands)
+        private bool isRunning;
+        public bool IsCommandExecuting => isRunning;
+
+        public void ExecuteCommand(List<ICommand<ContextT>> commands, CancellationToken externalCT = default)
         {
-            isCommandExecuting = true;
+            CancelCurrentCommandExecution();
 
-            foreach (ICommand<ContextT> command in commands)
-                await command.Execute(context);
+            isRunning = true;
+            executionCTS = externalCT == default ?
+                CancellationTokenSource.CreateLinkedTokenSource(this.GetCancellationTokenOnDestroy()) :
+                CancellationTokenSource.CreateLinkedTokenSource(this.GetCancellationTokenOnDestroy(), externalCT);
+            Run(commands, executionCTS.Token).SuppressCancellationThrow().Forget();
+        }
 
-            isCommandExecuting = false;
+        private void CancelCurrentCommandExecution()
+        {
+            if (executionCTS != null)
+            {
+                executionCTS?.Cancel();
+                executionCTS?.Dispose();
+                executionCTS = null;
+            }
+
+            isRunning = false;
+        }
+
+        private async UniTask Run(List<ICommand<ContextT>> commands, CancellationToken token)
+        {
+            CancellationTokenSource localCTS = executionCTS;
+
+            try
+            {
+                foreach (var command in commands)
+                    await command.Execute(context, token);
+            }
+            finally
+            {
+                if (executionCTS == localCTS)
+                {
+                    executionCTS?.Dispose();
+                    executionCTS = null;
+                    isRunning = false;
+                }
+            }
         }
     }
 }
