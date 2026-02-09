@@ -5,6 +5,10 @@ using UnityEngine;
 
 namespace Runtime.Command.AgentCommands
 {
+    /// <summary>
+    /// Command for agent to follow a target while maintaining a safe distance.
+    /// Continuously rotates toward and moves toward the target.
+    /// </summary>
     public class FollowCommand : AgentCommandBase
     {
         private const float Distance = 3f;

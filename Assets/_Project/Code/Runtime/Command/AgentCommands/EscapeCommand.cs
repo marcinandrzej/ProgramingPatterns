@@ -5,6 +5,10 @@ using UnityEngine;
 
 namespace Runtime.Command.AgentCommands
 {
+    /// <summary>
+    /// Command for agent to escape away from a target.
+    /// Moves in the opposite direction until a minimum distance is reached.
+    /// </summary>
     public class EscapeCommand : AgentCommandBase
     {
         private const float Distance = 10f;

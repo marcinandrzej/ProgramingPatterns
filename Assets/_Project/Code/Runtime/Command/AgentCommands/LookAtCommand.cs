@@ -5,6 +5,10 @@ using UnityEngine;
 
 namespace Runtime.Command.AgentCommands
 {
+    /// <summary>
+    /// Command for agent to look at a target continuously.
+    /// Rotates the agent's pivot towards the target until cancelled.
+    /// </summary>
     public class LookAtCommand : AgentCommandBase
     {
         public async override UniTask Execute(Agent context, CancellationToken token)
