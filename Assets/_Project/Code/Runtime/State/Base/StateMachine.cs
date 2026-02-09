@@ -53,7 +53,7 @@ namespace Runtime.State.Base
         /// </summary>
         public void RegisterState(StateT state, bool isStarting = false)
         {
-            if (states.Add(state) && states.Count == 0 && isStarting)
+            if (states.Add(state) && (isStarting || startingState == null))
                 startingState = state;
         }
 
